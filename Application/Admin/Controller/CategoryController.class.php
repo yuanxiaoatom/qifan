@@ -225,4 +225,16 @@ class CategoryController extends AdminController {
         }
 
     }
+    public function categoryTree(){
+    	//无限级分类的方法
+    	$list = D('CategoryTree')->select();
+    	$info = _getTree($list,$parent_id=0,$lev=0);
+    	$this->meta_title = '无限级分类管理';
+    	$this->assign('info',$info);
+    	$this->display();
+    }
+    public function addcategoryTree(){
+    	$this->display();
+    }
+    
 }

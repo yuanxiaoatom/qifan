@@ -19,7 +19,8 @@ class IndexController extends HomeController {
 		//读取栏目列表数据
 		$channel = D('Channel')->field("title,url")->order('sort asc')->select();
 		$this->assign('channel',$channel);
-		
+		$this->display();
+		exit;
 		$user_companymodel = D('User_company');
 		//首页产业园区数据
 		$gion = $user_companymodel->field()->where("class = 1")->order(array('order'=>'desc','id'=>'desc'))->limit(8)->find();

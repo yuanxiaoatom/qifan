@@ -789,4 +789,5 @@ class ArticleController extends AdminController {
             $this->error('非法请求！');
         }
     }
+     
 }

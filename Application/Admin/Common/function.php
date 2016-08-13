@@ -428,3 +428,21 @@ function get_action_type($type, $all = false){
     }
     return $list[$type];
 }
+//无限级分类的方法
+function _getTree($arr,$parent_id=0,$lev=0){
+	static $list=array();
+	foreach($arr as $v){
+		if($v['parent_id']==$parent_id){
+			$v['lev']=$lev;
+			$list[]=$v;
+			_getTree($arr,$v['id'],$lev+1);
+		}
+	}
+	return $list;
+}
+function pre($arr){
+	echo '<pre>';
+	print_r($arr);
+	echo '<pre>';
+}
+
