@@ -1016,3 +1016,45 @@ function check_category_model($info){
     $array  =   explode(',', $info['pid'] ? $cate['model_sub'] : $cate['model']);
     return in_array($info['model_id'], $array);
 }
+
+/*上传多张图片*/
+function moreUploadImg($imgName,$isThumb=0){
+	//定义文件根目录
+	$rootpath = './Uploads';
+	$upload = new \Think\Upload();// 实例化上传类
+	$upload->maxSize   =    3145728*1024*1024 ;// 设置附件上传大小
+	$upload->exts      =    array('jpg', 'gif', 'png', 'jpeg');// 设置附件上传类型
+	$upload->savePath   = './Uploads/';
+	$info   =   $upload->upload(array("$imgName"=>$_FILES[$imgName]));
+	//生成缩略图
+	$yuantuUrl = array();
+	$thumbUrl  = array();
+	foreach($info as $v){
+			$thumbPath = 'Uploads/'.$v['savepath'].$v[savename];
+			$yuantuUrl[] = 'Uploads/'.$v['savepath'].$v[savename];
+			if($isThumb==1){
+				$image = new \Think\Image();
+				$image->open($thumbPath);
+				$image->thumb(80, 80,\Think\Image::IMAGE_THUMB_CENTER)->save('./Uploads/Uploads/thumb/'.$v[savename]);
+				$url = 'Uploads/Uploads/thumb/'.$v[savename];
+				$thumbUrl[] = $url;
+			}
+		}
+	
+	if(!$info) {
+		return false;
+	}
+	return array('yuantuUrl'=>$yuantuUrl,'thumbUrl'=>$thumbUrl);
+}
+/*无限级分类的方法*/
+function infinite($list,$parent_id=0,$deep=0){
+	static $arr = array();
+	foreach ($list as $v){
+		if($v['parent_id']==$parent_id){
+			$v['deep'] = $deep;
+			$arr[] = $v;
+			infinite($list,$v['id'],$deep+1);
+		}
+	}
+	return $arr;
+}
