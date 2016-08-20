@@ -243,4 +243,173 @@ class ThinkController extends AdminController {
         }
         return $Model->validate($validate)->auto($auto);
     }
+    
+	public function yuanquadd(){
+		$model = M('Model')->where(array('status' => 1))->find(10);
+		$model || $this->error('模型不存在！');
+		$fields = get_model_attribute(10);
+		$this->assign('model', $model);
+		$this->assign('fields', $fields);
+		$this->meta_title = '新增'.$model['title'];
+		//取出城市的数据
+		$citylist = M('CategoryTree')->field("title,id,pid")->where("pid = 39")->select();
+		$this->assign('citylist',$citylist);
+		//读取功能数据
+		$gongnengList = M("CategoryTree")->field("title,id,pid")->where("pid = 55")->select();
+		$this->assign('gongnengList',$gongnengList);
+		//读取类型数据
+		$leixingList = M("CategoryTree")->field("title,id,pid")->where("pid = 60")->select();
+		$this->assign('leixingList',$leixingList);
+		
+		//读取级别数据
+		$jibieList = M("CategoryTree")->field("title,id,pid")->where("pid = 65")->select();
+		$this->assign('jibieList',$jibieList);
+		if(IS_POST){
+			/*多图片上传*/
+			$info = moreUploadImg('photo',1);
+			$xiangce = json_encode($info['yuantuUrl']);
+			$thumb = json_encode($info['thumbUrl']);
+			$data = $_POST;
+			$data['create_time'] = time();
+			$data['xiangce'] = $xiangce;
+			$data['thumb'] = $thumb;
+			$data['servers'] = preg_replace("#\\\u([0-9a-f]+)#ie", "iconv('UCS-2', 'UTF-8', pack('H4', '\\1'))", json_encode($_POST['servers']));
+			if(M('Yuanqu')->add($data)){
+				$this->success('添加成功',U('yuanqulists'));exit;
+			}else{
+				$this->error('添加失败');
+			}
+		}
+		
+		$this->display();
+	}
+	//园区列表
+	public function yuanqulists(){
+		//读取园区的信息列表
+		$model = M('Model')->where(array('status' => 1))->find(10);
+		$model || $this->error('模型不存在！');
+		$fields = get_model_attribute(10);
+		$this->assign('model', $model);
+		$this->meta_title = '列表'.$model['title'];
+		$list = M('Yuanqu')->field("id,title,create_time")->select();
+		$this->assign('list',$list);
+		$this->display();
+	}
+	//获取区域
+	public function getQuyu(){
+		$id = I('post.id')+0;
+		$quyu_id = I('post.quyu_id');
+		$info =  M('CategoryTree')->field('title,id,pid')->where("pid = $id")->select();
+		$str = '';
+		$str .= '<select name="quyu_id" style="float:left; width:100px;">';
+		$str .= '<option value="">请选择区域</option>';
+		$selected = "";
+		foreach($info as $v){
+			if($v[id] ==$quyu_id){
+				$selected = "selected=selected";
+			}
+			$str .='<option value="'.$v['id'].'"'.$selected.'>'.$v['title'].'</option>';
+		}
+		$str .= '</select>';
+		echo $str;
+	}
+	//修改
+	public function yuanquedit(){
+		//取出城市的数据
+		$citylist = M('CategoryTree')->field("title,id,pid")->where("pid = 39")->select();
+		$this->assign('citylist',$citylist);
+		//读取功能数据
+		$gongnengList = M("CategoryTree")->field("title,id,pid")->where("pid = 55")->select();
+		$this->assign('gongnengList',$gongnengList);
+		//读取类型数据
+		$leixingList = M("CategoryTree")->field("title,id,pid")->where("pid = 60")->select();
+		$this->assign('leixingList',$leixingList);
+		//读取级别数据
+		$jibieList = M("CategoryTree")->field("title,id,pid")->where("pid = 65")->select();
+		$this->assign('jibieList',$jibieList);
+		
+		$id = $_GET['id']+0;
+		//根据id查询相关信息
+		$info = M('Yuanqu')->where("id = $id")->find();
+		$this->assign('info',$info);
+		//将服务信息转成数组
+		$servers = json_decode($info['servers']);
+		$xiangce = json_decode($info['xiangce']);
+		$thumb   = json_decode($info['thumb']);
+		$this->assign('thumb',$thumb);
+		$this->assign('servers',$servers);
+		//修改
+		if(IS_POST){
+			if(!empty($_FILES)){
+				$info = moreUploadImg('photo',1);
+				$xiangce = json_encode($info['yuantuUrl']);
+				$thumb = json_encode($info['thumbUrl']);
+			}
+			$data = $_POST;
+			$id = $_POST['id'];
+			unset($_POST['id']);
+			$data['create_time'] = time();
+			$data['xiangce'] = $xiangce;
+			$data['thumb'] = $thumb;
+			$data['servers'] = preg_replace("#\\\u([0-9a-f]+)#ie", "iconv('UCS-2', 'UTF-8', pack('H4', '\\1'))", json_encode($_POST['servers']));
+			if(M('Yuanqu')->where("id = $id")->save($data)!==false){
+				$this->success('修改成功',U('yuanqulists'));exit;
+			}else{
+				$this->error('修改失败');
+			}
+			
+		}
+
+		$this->display();
+		
+	}
+	public function yuanqudel(){
+		$id = $_GET['id']+0;
+		if(M('Yuanqu')->where("id = $id")->delete()!==false){
+			$this->success('删除成功',U('yuanqulists'));exit;
+		}else{
+			$this->error('参数错误');
+		}
+		
+	}
+	/*楼宇经济信息管理*/
+	public function louyulist(){
+		
+	}
+	
+	
+	public function louyuadd(){
+		//读取城市分类信息
+		$model = M('CategoryTree');
+		$citylist = $model->field("title,id,pid")->where("pid = 39")->select();
+		$this->assign('citylist',$citylist);
+		//读取租金分类信息
+		$zujinlist = $model->field("title,id,pid")->where("pid = 71 ")->select();
+		$this->assign('zujinlist',$zujinlist);
+		//读取面积分类信息
+		$mianjilist = $model->field("title,id,pid")->where("pid = 77")->select();
+		$this->assign('mianjilist',$mianjilist);
+		
+		if(IS_POST){
+			/*多图片上传*/
+			$info = moreUploadImg('photo',1);
+			$xiangce = json_encode($info['yuantuUrl']);
+			$thumb = json_encode($info['thumbUrl']);
+			$data = $_POST;
+			$data['create_time'] = time();
+			$data['xiangce'] = $xiangce;
+			$data['thumb'] = $thumb;
+			if(M('Louyu')->add($data)){
+				$this->success('添加成功',U('yuanqulists'));exit;
+			}else{
+				$this->error('添加失败');
+			}
+		}
+
+		$this->display();
+		
+	}
+	
+	
+	
 }

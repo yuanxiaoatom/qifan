@@ -16,6 +16,7 @@ use OT\DataDictionary;
  */
 class IndexController extends HomeController {
     public function index(){
+    	
 		//读取栏目列表数据
 		$channel = D('Channel')->field("title,url")->order('sort asc')->select();
 		$this->assign('channel',$channel);
@@ -62,7 +63,7 @@ class IndexController extends HomeController {
     }
     //产业园区
     public function gion(){
-        
+        $this->display();exit;
         $user_companymodel = D('User_company');
         $city_id = empty($_GET['city_id']) ? 0 : $_GET['city_id'];
         $class = empty($_GET['class']) ? 0 : $_GET['class'];
